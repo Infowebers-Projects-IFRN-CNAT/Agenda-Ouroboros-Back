@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -17,7 +18,7 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails())
-            return response(['errors'=> $validator->errors()->all()], 422);
+            return response(['errors'=> $validator->errors()->all()], 401);
 
         $email = $request->get('email');
         $password = $request->get('password');
@@ -30,6 +31,15 @@ class UserController extends Controller
             );
         }
         
-        return response(["message" => "falhou"], 422);
+        return response(["message" => "falhou"], 401);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        $cookie = Cookie::forget('token');
+
+        return response(["message" => "Sucesso"], 200)
+            ->withCookie($cookie);
     }
 }
