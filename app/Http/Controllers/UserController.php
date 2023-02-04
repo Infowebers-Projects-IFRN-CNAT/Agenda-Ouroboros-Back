@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -41,5 +42,24 @@ class UserController extends Controller
 
         return response(["message" => "Sucesso"], 200)
             ->withCookie($cookie);
+    }
+
+    public function createUser(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email|max:255',
+            'password' => 'required'
+        ]);
+
+        if ($validator->fails())
+            return response(['errors'=> $validator->errors()->all()], 401);
+
+        $user = new User();
+        $user->name = $request->get('name');
+        $user->email = $request->get('email');
+        $user->password = Hash::make($request->get('password'));
+        if($user->save()){
+            return response(['message'=> 'Usuário criado.'], 200);
+        }
     }
 }
